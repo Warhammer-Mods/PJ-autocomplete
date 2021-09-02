@@ -1,3 +1,5 @@
+---@diagnostic disable: lowercase-global
+
 ---@alias object table
 ---@alias vector table
 

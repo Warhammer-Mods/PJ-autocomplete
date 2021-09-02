@@ -1,8 +1,41 @@
+---@diagnostic disable: lowercase-global
+
+---@class CA_CQI
+---@type number
+CA_CQI = {}
+
+---@class CA_EventName
+---@type "CharacterCreated" | "ComponentLClickUp" | "ComponentMouseOn" | "PanelClosedCampaign" | "PanelOpenedCampaign" | "TimeTrigger" | "UICreated"
+CA_EventName = {}
+
+---@class BUTTON_STATE
+---@type "active" | "hover" | "down" | "selected" | "selected_hover" | "selected_down" | "drop_down"
+BUTTON_STATE = {}
+
+---@class CA_UIContext
+---@type object
+CA_UIContext = {}
+
+---@class CA_UIContext.component
+---@type object
+---@alias CA_Component object
+CA_UIContext.component = {}
+CA_Component = CA_UIContext.component
+
+---@class CA_UIContext.string
+---@type string
+CA_UIContext.string = string
+
 ---@class CA_SETTLEMENT_CONTEXT
 CA_SETTLEMENT_CONTEXT = {}
 
 ---@return CA_GARRISON_RESIDENCE
 function CA_SETTLEMENT_CONTEXT:garrison_residence() end
+
+---CA Event context. Varies with each event.
+---@class EVENT_CONTEXT
+---@type userdata
+EVENT_CONTEXT = {}
 
 ---@class CA_CHAR_CONTEXT
 CA_CHAR_CONTEXT = {}
@@ -25,7 +58,6 @@ function CA_UIC:ChildCount() end
 function CA_UIC:ClearSound() end
 
 ---@alias CA_UIC_ADDRESS number
----@alias BUTTON_STATE string
 
 ---@param name string
 ---@param path string
@@ -172,6 +204,52 @@ function CA_UIC:SetImagePath(path, index) end
 ---@return number
 function CA_UIC:NumImages() end
 
+------------------------
+-------CampaignUI-------
+------------------------
+
+---The CampaignUI script object is created automatically when the campaign UI loads,
+---and offers a suite a functions that allow scripts to query and customise bits of the UI.
+---It does not need to be created by script, and the functions it provides may be called directly
+---on the object in the following form.
+---@class CampaignUI
+CampaignUI = {}
+
+---Creates or destroys a black screen cover (when not eyefinity).
+---@param enable_cover boolean
+---@return nil
+function CampaignUI.ToggleScreenCover(enable_cover) end
+
+---Clears the current ui selection, ensuring that no settlements or characters are selected
+---by the player.
+---@return nil
+function CampaignUI:ClearSelection() end
+
+--Multiplayer
+
+---Allows the script running on one machine in a multiplayer game to cause a scripted event,
+---**`UITrigger`**, to be triggered on all machines in that game.
+---By listening for this event, scripts on all machines in a multiplayer game can therefore
+---respond to a UI event occuring on just one of those machines.
+---
+---An optional string event id and number faction cqi may be specified.
+---If specified, these values are passed from the triggering script through to all listening
+---scripts, using the context objects supplied with the events. The event id may be accessed
+---by listening scripts by calling `<context>:trigger()` on the supplied context object,
+---and can be used to identify the script event being triggered.
+---The faction cqi may be accessed by calling `<context>:faction_cqi()` on the context object,
+---and can be used to identify a faction associated with the event.
+---Both must be specified, or neither.
+---@param cqi number
+---@param string string
+---@return nil
+function CampaignUI:TriggerCampaignScriptEvent(cqi, string) end
+
+
+--------------------------
+-----CAMPAIGN MANAGER-----
+--------------------------
+
 ---@class CM
 CM = {}
 cm = CM
@@ -254,7 +332,7 @@ function CM:disable_shortcut(button, action, opt) end
 ---@param opt boolean
 function CM:override_ui(override, opt) end
 
----@param opt bool
+---@param opt boolean
 function CM:steal_user_input(opt) end
 
 ---@return number, number, number, number
@@ -276,9 +354,9 @@ function CM:remove_callback(name) end
 ---@param context_str string?
 function CM:add_turn_countdown_event(faction_name, turn_offset, event_name, context_str) end
 
----@param num number | int
+---@param num number | integer
 ---@param max number?
----@return int
+---@return integer
 function CM:random_number(num, max) end
 
 ---@param lookup string
@@ -309,7 +387,7 @@ function CM:force_add_skill(lookup, skill_key) end
 function CM:force_add_and_equip_ancillary(lookup, ancillary) end
 
 ---@param char_lookup_str string
----@param level int
+---@param level integer
 function CM:award_experience_level(char_lookup_str, level) end
 
 ---@param lookup CA_CQI
@@ -333,33 +411,67 @@ function CM:teleport_to(charString, xPos, yPos, useCommandQueue) end
 ---@param lookup string
 function CM:replenish_action_points(lookup) end
 
----@param callback fun(context: WHATEVER)
+---@param callback fun(context: EVENT_CONTEXT)
 function CM:add_saving_game_callback(callback) end
 
----@param callback fun(context: WHATEVER)
+---@param callback fun(context: EVENT_CONTEXT)
 function CM:add_loading_game_callback(callback) end
 
 ---@param valueKey string
----@param value any
+---@param value string | boolean | number | table
 function CM:set_saved_value(valueKey, value) end
 
 ---@param valueKey string
----@return WHATEVER
+---@return string | boolean | number | table
 function CM:get_saved_value(valueKey) end
 
 ---@param name string
 ---@param value any
----@param context WHATEVER?
+---@param context userdata
 function CM:save_named_value(name, value, context) end
 
 ---@param name string
----@param default any
----@param context WHATEVER?
----@return WHATEVER
+---@param default string | boolean | number | table
+---@param context userdata
+---@return string | boolean | number | table
 function CM:load_named_value(name, default, context) end
 
 ---@param opt boolean
 function CM:disable_saving_game(opt) end
+
+---@param faction_key string
+---@param start_x number
+---@param start_y number
+---@param in_same_region boolean
+---@param OPT_preferred_spawn_distance number
+function CM:find_valid_spawn_location_for_character_from_position(faction_key, start_x, start_y, in_same_region, OPT_preferred_spawn_distance) end
+
+---@param faction_key string
+---@param settlement_region_key string
+---@param on_sea boolean
+---@param in_same_region boolean
+---@param OPT_preferred_spawn_distance number
+function CM:find_valid_spawn_location_for_character_from_settlement(faction_key, settlement_region_key, on_sea, in_same_region, OPT_preferred_spawn_distance) end
+
+---@param faction_key string
+---@param character_lookup string
+---@param in_same_region boolean
+---@param OPT_preferred_spawn_distance number
+function CM:find_valid_spawn_location_for_character_from_character(faction_key, character_lookup, in_same_region, OPT_preferred_spawn_distance) end
+
+---@param attacker_force_cqi CA_CQI
+---@param target_force_cqi CA_CQI
+---@param is_ambush boolean
+function CM:force_attack_of_opportunity(attacker_force_cqi, target_force_cqi, is_ambush) end
+
+---@param id string
+---@param marker_key string
+---@param x integer
+---@param y integer
+---@param radius integer
+---@param opt_faction_key string
+---@param opt_subculture_key string
+function CM:add_interactable_campaign_marker(id, marker_key, x, y, radius, opt_faction_key, opt_subculture_key) end
 
 ---@param bundle string
 ---@param region string
@@ -453,11 +565,11 @@ function CM:force_confederation(confederator, confederated) end
 ---@param unknown_bool boolean
 function CM:force_alliance(faction, other_faction, unknown_bool) end
 
----@param pos int) --> (CA_CQI
+---@param pos integer) --> (CA_CQI
 ---@return CA_CQI, CA_CQI, string
 function CM:pending_battle_cache_get_defender(pos) end
 
----@param pos int) --> (CA_CQI
+---@param pos integer) --> (CA_CQI
 ---@return CA_CQI, CA_CQI, string
 function CM:pending_battle_cache_get_attacker(pos) end
 
@@ -472,10 +584,10 @@ function CM:pending_battle_cache_attacker_victory() end
 ---@return boolean
 function CM:pending_battle_cache_faction_is_involved(faction_key) end
 
----@return int
+---@return integer
 function CM:pending_battle_cache_num_attackers() end
 
----@return int
+---@return integer
 function CM:pending_battle_cache_num_defenders() end
 
 ---@param key string
@@ -614,7 +726,7 @@ function CUIM:stop_scripted_sequence() end
 ---@class CUIM_OVERRIDE
 CUIM_OVERRIDE = {}
 
----@param allowed bool
+---@param allowed boolean
 function CUIM_OVERRIDE:set_allowed(allowed) end
 
 ---@class CA_GAME
@@ -994,7 +1106,7 @@ function CA_MODEL:turn_number() end
 ---@return CA_PENDING_BATTLE
 function CA_MODEL:pending_battle() end
 
----@return int
+---@return integer
 function CA_MODEL:combined_difficulty_level() end
 
 ---@param campaign_name string
@@ -1195,23 +1307,58 @@ core = CORE
 ---@return CA_UIC
 function CORE:get_ui_root() end
 
----@param listenerName string
----@param eventName string
----@param predicate function
+---Adds a listener for an event. When the code triggers this event, and should the optional supplied conditional test pass,
+---the core object will call the supplied target callback with the event context as a single argument.
+---A name must be specified for the listener which may be used to cancel it at any time.
+---Names do not have to be unique between listeners.
+---The conditional test should be a function that returns a boolean value.
+---This conditional test callback is called when the event is triggered,
+---and the listener only goes on to trigger the supplied target callback if the conditional test returns true.
+---Alternatively, a boolean true value may be given in place of a conditional callback,
+---in which case the listener will always go on to call the target callback if the event is triggered.
+---Once a listener has called its callback it then shuts down unless the persistent flag is set to true,
+---in which case it may only be stopped by being cancelled by name.
+---@param listener_name string
+---@param event_name string
+---@param condition function
 ---@param callback function
----@param is_repeating bool
-function CORE:add_listener(listenerName, eventName, predicate, callback, is_repeating) end
+---@param is_repeating boolean
+---@return nil
+function CORE:add_listener(listener_name, event_name, condition, callback, is_repeating) end
 
----@param listenerName string
-function CORE:remove_listener(listenerName) end
+---Removes and stops any event listeners with the specified name.
+---@param listener_name string
+---@return nil
+function CORE:remove_listener(listener_name) end
+
+---Triggers an event from script, to which event listeners will respond.
+---An event name must be specified, as well as zero or more items of data to package up in a custom event context.
+---See custom_context documentation for information about what types of data may be supplied with a custom context.
+---A limitation of the implementation means that only one data item of each supported type may be specified.
+---By convention, the names of events triggered from script are prepended with "ScriptEvent" e.g. "ScriptEventPlayerFactionTurnStart".
+---@param event_name string
+---@vararg userdata
+---@return nil
+function CORE:trigger_event(event_name, ...) end
+
+---Triggers an event from script with a context object constructed from custom data.
+---An event name must be specified, as well as a table containing context data at key/value pairs.
+---For keys that are strings, the value corresponding to the key will be added to the custom_context generated,
+---and will be available to listening scripts through a function with the same name as the key value.
+---An example might be a hypothetical event `ScriptEventCharacterInfected`,
+---with a key disease and a value which is the name of the disease.
+---This would be accessible to listeners of this event that call `context:disease()`.
+---Should the key not be a string then the data is added to the context as normal, as if supplied to `custom_context:add_data`.
+---By convention, the names of events triggered from script are prepended with `"ScriptEvent"`, e.g. `"ScriptEventPlayerFactionTurnStart"`.
+---@param event_name string
+---@param data_items table
+---@return nil
+function CORE:trigger_custom_event(event_name, data_items) end
 
 function CORE:add_ui_created_callback() end
 
 ---@return number, number
 function CORE:get_screen_resolution() end
-
----@param event_name string
-function CORE:trigger_event(event_name, ...) end
 
 ---@class CA_POOLED
 CA_POOLED = {}
@@ -1268,14 +1415,14 @@ function CA_RITUAL:ritual_category() end
 ---@class CA_RITUAL_LIST
 CA_RITUAL_LIST = {}
 
----@param i int
+---@param i integer
 ---@return CA_RITUAL
 function CA_RITUAL_LIST:item_at(i) end
 
 ---@return boolean
 function CA_RITUAL_LIST:is_empty() end
 
----@return int
+---@return integer
 function CA_RITUAL_LIST:num_items() end
 
 ---@class RITE_UNLOCK
@@ -1294,6 +1441,10 @@ function RITE_UNLOCK:start(human_faction_name) end
 
 ---@class MISSION_MANAGER
 MISSION_MANAGER = {}
+
+---@class CA_MISSION_OBJECTIVE
+---@type "CAPTURE_REGIONS" | "SCRIPTED" | "RAZE_OR_SACK_N_DIFFERENT_SETTLEMENTS_INCLUDING" | "ELIMINATE_CHARACTER_IN_BATTLE" | "MOVE_TO_REGION" | "DEFEAT_N_ARMIES_OF_FACTION"
+CA_MISSION_OBJECTIVE = {}
 
 ---@param faction_key string
 ---@param mission_key string
@@ -1329,42 +1480,53 @@ function MISSION_MANAGER:add_description(description_loc_key) end
 
 ---@param objective_loc_key string
 ---@param event string
----@param condition fun(context: WHATEVER)
----@param script_key string?
+---@param condition fun(context: userdata)
+---@param script_key? string
 function MISSION_MANAGER:add_new_scripted_objective(objective_loc_key, event, condition, script_key) end
 
+---Adds a new success condition to a scripted objective. scripted objective. If a script key is specified the success condition is added to the objective with this key (assuming it exists), otherwise the success condition is added to the first scripted objective.
 ---@param event string
----@param condition fun()
----@param script_key string?
+---@param condition function
+---@param script_key? string
 function MISSION_MANAGER:add_scripted_objective_success_condition(event, condition, script_key) end
 
 ---@param event string
----@param condition fun()
----@param script_key string?
+---@param condition function
+---@param script_key? string
 function MISSION_MANAGER:add_scripted_objective_failure_condition(event, condition, script_key) end
 
----@param script_key string?
+---@param script_key? string
 function MISSION_MANAGER:force_scripted_objective_success(script_key) end
 
----@param script_key string?
+---@param script_key? string
 function MISSION_MANAGER:force_scripted_objective_failure(script_key) end
 
 ---@param override_text_loc string
----@param script_key string?
+---@param script_key? string
 function MISSION_MANAGER:update_scripted_objective_text(override_text_loc, script_key) end
 
-function MISSION_MANAGER:set_should_cancel_before_issuing() end
+---@param is_cancelling boolean
+function MISSION_MANAGER:set_should_cancel_before_issuing(is_cancelling) end
 
-function MISSION_MANAGER:set_should_should_whitelist() end
+---@param is_whitelisted boolean
+function MISSION_MANAGER:set_should_should_whitelist(is_whitelisted) end
 
----@param callback fun()
+---Specifies a callback to call, one time, when the mission is first triggered.
+---This can be used to set up other scripts or game objects for this mission.
+---@param callback function
 function MISSION_MANAGER:set_first_time_startup_callback(callback) end
 
----@param callback fun()
+---Specifies a callback to call each time the script is started while this mission is active -
+---after the mission is first triggered and before it's completed.
+---This can be used to set up other scripts or game objects for this mission each time the script is loaded.
+---If registered, this callback is also called when the mission is first triggered,
+---albeit after any callback registered with `mission_manager:set_first_time_startup_callback`.
+---@param callback function
 function MISSION_MANAGER:set_each_time_startup_callback(callback) end
 
----@param dismiss_callback fun()
----@param delay number?
+---Triggers the mission, causing it to be issued.
+---@param dismiss_callback? function
+---@param delay? number
 function MISSION_MANAGER:trigger(dismiss_callback, delay) end
 
 ---@param mission_key string
@@ -1429,18 +1591,23 @@ function LL_UNLOCK:new(faction_key, startpos_id, forename_key, event, condition)
 
 function LL_UNLOCK:start() end
 
+---@class INVASION
+---@type object The new invasion object created by INVASION_MANAGER()
+INVASION = {}
+invasion = INVASION
+
 ---@class INVASION_MANAGER
 INVASION_MANAGER = {}
 invasion_manager = INVASION_MANAGER
 
---- @section Creating Invasions
---- @function new_invasion
---- @desc Adds a new invasion to the invasion manager
---- @p string key, The key of this invasion
---- @p string faction_key, The key of the faction that this invasion belongs to
---- @p string force_list, The units that will be part of this invasion
---- @p object spawn_location, Pass either a table of x/y coordinates or a string for the key of a preset location
---- @return invasion The new invasion object created by this function
+---Creating Invasions
+
+---Adds a new invasion to the invasion manager
+---@param key string The key of this invasion
+---@param faction_key string The key of the faction that this invasion belongs to
+---@param force_list string The units that will be part of this invasion
+---@param spawn_location object Pass either a table of x/y coordinates or a string for the key of a preset location
+---@return INVASION
 function INVASION_MANAGER:new_invasion(key, faction_key, force_list, spawn_location) end
 
 function INVASION_MANAGER:new_invasion_from_existing_force(key, force) end
@@ -1454,33 +1621,86 @@ function INVASION_MANAGER:remove_invasion(key) end
 function INVASION_MANAGER:remove_invasion(key) end
 function INVASION_MANAGER:remove_invasion(key) end
 
----@class INVASION
-INVASION = {}
-invasion = INVASION
+---@class INVASION_TARGETS
+---@type "REGION" | "CHARACTER" | "LOCATION" | "PATROL"
+INVASION_TARGETS = {}
 
 ---@param target_type INVASION_TARGETS
----@param target WHATEVER
+---@param target object
 ---@param target_faction_key string
+---@return nil
 function INVASION:set_target(target_type, target, target_faction_key) end
 
+---Sets this invasion to no longer have a target
+---@return nil
+function INVASION:remove_target() end
+
+---Add an aggravation radius to this invasion in which the force will attack all specified targets
+---that enter its aggro range
+---@param radius number
+---@param target_list table
+---@param abort_timer number
+---@return nil
+function INVASION:add_aggro_radius(radius, target_list, abort_timer) end
+
+---Removes all aggravation behaviour from this invasion
+---@return nil
+function INVASION:remove_aggro_radius() end
+
+---Sets if the Invasion will abort if the owner of the target differs to the Invasions faction target
+---@param abort boolean
+function INVASION:abort_on_target_owner_change(abort) end
+
+---Sets a General to be used when spawning this invasion
+---@param character CA_CHAR
+---@return nil
+function INVASION:assign_general(character) end
+
+---Sets up a general to be created to command this invasion force when it is spawned
+---@param make_faction_leader boolean
+---@param agent_subtype string
+---@param forename string
+---@param clan_name string
+---@param family_name string
+---@param other_name string
+---@return nil
+function INVASION:create_general(make_faction_leader, agent_subtype, forename, clan_name, family_name, other_name) end
+
+---Sets whether the General leading this invasion should be immortal or not
+---@param is_immortal boolean
+---@return nil
+function INVASION:set_general_immortal(is_immortal) end
+
+---Sets the Invasion should not move after completing it's objective
+---@param should_stop boolean
+---@return nil
+function INVASION:should_stop_at_end(should_stop) end
+
+---Allows to apply an effect bundle to the forces in this invasion
 ---@param effect_key string
 ---@param turns number
+---@return nil
 function INVASION:apply_effect(effect_key, turns) end
 
----@param quanity number
-function INVASION:add_character_experience(quanity) end
+---Allows to add experience to the general in this invasion or set their level
+---@param experience_amount number
+---@param by_level boolean
+---@return nil
+function INVASION:add_character_experience(experience_amount, by_level) end
 
----@param quantity number
-function INVASION:add_unit_experience(quantity) end
+---Allows to add experience to the units of the army in this invasion
+---@param unit_experience_amount number
+function INVASION:add_unit_experience(unit_experience_amount) end
 
----@param callback fun()
----@param declare_war boolean?
----@param invite_attacker_allies boolean?
----@param invite_defender_allies boolean?
+---@param callback function
+---@param declare_war? boolean
+---@param invite_attacker_allies? boolean
+---@param invite_defender_allies? boolean
 function INVASION:start_invasion(callback, declare_war, invite_attacker_allies, invite_defender_allies) end
 
----@class _G
-_G = {}
+---@class BATTLE_SIDE
+---@type "Attacker" | "Defender"
+BATTLE_SIDE = {}
 
 ---@param parent CA_UIC
 ---@return CA_UIC
@@ -1491,7 +1711,7 @@ find_uicomponent = function(parent, ...) end
 UIComponent = function(pointer) end
 
 ---@param root CA_UIC
----@param findtable string[]
+---@param findtable string
 ---@return CA_UIC
 find_uicomponent_from_table = function(root, findtable) end
 
@@ -1557,7 +1777,7 @@ load_script_libraries = function() end
 ---@return CM
 get_cm = function() end
 
----@param context WHATEVER?
+---@param context EVENT_CONTEXT
 get_events = function(context) end
 
 ---@param char CA_CHAR
@@ -1590,8 +1810,79 @@ function CM:instantly_upgrade_building_in_region(slot, target_building_key) end
 ---@return boolean
 distance_squared = function(x1, y1, x2, y2) end
 
----@param degrees number
-d_to_r = function(degrees) end
+---Converts a supplied angle in degrees to radians.
+---@param angle number
+---@return number #Angle in radians
+d_to_r = function(angle) end
 
----@param fun function
-function CM:add_first_tick_callback(fun) end
+---Registers a function to be called when the first tick occurs.
+---Callbacks registered with this function will be called regardless of what mode the campaign is being loaded in.
+---@param callback function
+---@return nil
+function CM:add_first_tick_callback(callback) end
+
+----------------------------------------
+-----------CUSTOM ADDITIONS-------------
+----------------------------------------
+
+-- Game APIs not covered by PJ
+
+----------------------------------------
+-----------------CORE-------------------
+----------------------------------------
+
+---Returns whether the game is currently in campaign mode
+---@return boolean
+function CORE:is_campaign() end
+
+---Retrieves a unique integer number. Each number is 1 higher than the previous unique number, with the sequence starting at 1.
+---This functionality is useful for scripts that need to generate unique identifiers. The ascending sequence is not saved into a campaign savegame.
+---An optional string classification may be provided. For each classification a new ascending integer is created and maintained.
+---@param object_name string
+---@param object object
+---@param classification string
+---@param is_overwrite boolean
+---@return nil
+function CORE:add_static_object(object_name, object, classification, is_overwrite) end
+
+---Returns the static object previously registered with the supplied string name and optional classification using `core:add_static_object`,
+---if any such object has been registered, or nil if no object was found.
+---@param object_name string
+---@return object
+function CORE:get_static_object(object_name) end
+
+----------------------------------------
+-----------CAMPAIGN MANAGER-------------
+----------------------------------------
+
+-- First Tick
+
+---Registers a function to be called before any other first tick callbacks.
+---Callbacks registered with this function will be called regardless of what mode the campaign is being loaded in.
+---@param callback function
+function CM:add_pre_first_tick_callback(callback) end
+
+-- Province and Faction Mechanics
+
+--- Adds one or more units of a specified type to the mercenary pool in a province.
+--- These units can then be recruitable by that faction (or potentially other factions) using gameplay mechanics such as Raising Dead.
+---@param region CA_REGION
+---@param unitkey string
+---@param count number
+---@param replenishment_chance number
+---@param max_count number
+---@param max_replenishment_per_turn number
+---@param level number
+---@param faction_restriction string
+---@param subculture_restriction string
+---@param tech_restriction string
+---@param partial_replenishment boolean
+function CM:add_unit_to_province_mercenary_pool(region, unitkey, count, replenishment_chance, max_count, max_replenishment_per_turn, level, faction_restriction, subculture_restriction, tech_restriction, partial_replenishment) end
+
+--- Adds one or more of a specified unit to the specified province mercenary pool.
+--- The province is specified by a region within it.
+--- Unlike with cm:add_unit_to_province_mercenary_pool, the unit type must already be represented in the pool.
+---@param region_key string
+---@param unitkey string
+---@param count number
+function CM:add_units_to_province_mercenary_pool_by_region(region_key, unitkey, count) end
