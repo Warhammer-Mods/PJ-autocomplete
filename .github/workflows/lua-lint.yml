@@ -2,13 +2,7 @@ name: Lua lint
 
 on: 
   push:
-    paths:
-      - 'script/**'
-      - '.luacheckrc'
   pull_request:
-    paths:
-      - 'script/**'
-      - '.luacheckrc'
   workflow_dispatch:
 
 env:
@@ -21,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
       with:
         persist-credentials: false
 
@@ -52,4 +46,3 @@ jobs:
         else
           exit 0;
         fi
-
