@@ -1336,6 +1336,10 @@ function FACTION_SCRIPT_INTERFACE:rituals() end
 ---@return boolean
 function FACTION_SCRIPT_INTERFACE:has_rituals() end
 
+---Is this faction a quest battle faction?
+---@return boolean
+function FACTION_SCRIPT_INTERFACE:is_quest_battle_faction() end
+
 ---@param province_key string
 ---@param include_vassals boolean
 function FACTION_SCRIPT_INTERFACE:holds_entire_province(province_key, include_vassals) end
