@@ -85,6 +85,7 @@ jobs:
           changes_tracked="$(git status --porcelain=1 --untracked-files=no *.rockspec)"
           og_IFS=$IFS
           IFS='\n'
+          [[ -z $changes_tracked ]] || \
           for line in "${changes_tracked}"; do
             file=$(cut -d" " -f2 <<< ${line})
             files+=("${file}")
@@ -92,6 +93,7 @@ jobs:
             echo "::debug::$(git diff ${file})"
           done
           changes_untracked="$(git ls-files --others --exclude-standard *.rockspec)"
+          [[ -z $changes_untracked ]] || \
           for file in "${changes_untracked}"; do
             files+=("${file}")
             echo "::notice file=${file}::New file: ${file}"
@@ -153,7 +155,6 @@ jobs:
         github_token: ${{ secrets.BOT_TOKEN }}
         branch: ${{ steps.commit.outputs.branch }}
         tags: true
-        force: true
 
     - name: Release
       id: release
