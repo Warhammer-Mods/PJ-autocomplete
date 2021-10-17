@@ -46,6 +46,12 @@ jobs:
     - name: Install luacheck
       run: luarocks install luacheck
 
+    - name: Move installed Lua files
+      run: |
+        mv -v .lua* ../
+        echo "$(readlink -f ../.lua/bin)" >> $GITHUB_ENV
+        echo "$(readlink -f ../.luarocks/bin)" >> $GITHUB_ENV
+
     - name: Luacheck Lint
       id: luacheck
       shell: bash --noprofile --norc {0}
