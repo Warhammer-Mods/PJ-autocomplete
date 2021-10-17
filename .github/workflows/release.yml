@@ -28,6 +28,7 @@ jobs:
     outputs:
       clean: ${{ steps.changes.outputs.clean }}
       files: ${{ steps.changes.outputs.files }}
+      rockspec: ${{ steps.changes.outputs.rockspec }}
 
     steps:
 
@@ -115,6 +116,8 @@ jobs:
           echo "::notice::clean: false"
           echo "::set-output name=files::${files[@]}"
           echo "::set-output name=clean::false"
+          # there should be only one rockspec file
+          echo "::set-output name=rockspec::$(basename *.rockspec)"
         fi
 
     - name: Upload updated files
@@ -128,6 +131,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-update
     if: needs.lint-and-update.outputs.clean == 'false'
+    outputs:
+      tag: ${{ steps.commit.outputs.tag }}
+      branch: ${{ steps.commit.outputs.branch }}
 
     steps:
     - uses: actions/checkout@v2
@@ -176,3 +182,34 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
+
+  deploy:
+    needs: [lint-and-update, release]
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Fetch Repo Info
+      id: repo
+      run: echo "REPO_PATH=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+
+    - uses: leafo/gh-actions-lua@v8.0.0
+      with:
+        luaVersion: ${{ env.LUA_VERSION }}
+        
+    - uses: leafo/gh-actions-luarocks@v4.1.0
+      with:
+        luarocksVersion: ${{ env.LUAROCKS_VERSION }}
+        
+    - name: Install lua-cjson
+      run: luarocks install lua-cjson
+
+    - uses: actions/checkout@v2
+      with:
+        path: ${{ env.REPO_PATH }}
+        ref: refs/tags/release/${{ needs.release.outputs.tag }}
+
+    - name: Upload rock
+      run: |
+        cd ${{ env.REPO_PATH }}
+        luarocks upload --api-key="${{ secrets.LUAROCKS_API_KEY }}" "${{ needs.lint-and-update.outputs.rockspec }}"
