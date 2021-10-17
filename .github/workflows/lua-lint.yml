@@ -2,12 +2,31 @@ name: Lua lint
 
 on: 
   push:
+    branches:
+      - master
+      - develop
+      - 'feature/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+      - 'support/**'
+      - 'update/**'
   pull_request:
+    branches:
+      - master
+      - develop
+      - 'feature/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+      - 'support/**'
+      - 'update/**'
   workflow_dispatch:
 
 env:
   FILES_TO_CHECK: >-
     .
+  LUACHECK_CONFIG: .luacheckrc
+  LUA_VERSION: "5.1"
+  LUAROCKS_VERSION: "3.7.0"
 
 jobs:
 
@@ -16,16 +35,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        persist-credentials: false
 
     - uses: leafo/gh-actions-lua@v8.0.0
       with:
-        luaVersion: "5.1"
+        luaVersion: ${{ env.LUA_VERSION }}
         
     - uses: leafo/gh-actions-luarocks@v4.1.0
       with:
-        luarocksVersion: "3.7.0"
+        luarocksVersion: ${{ env.LUAROCKS_VERSION }}
         
     - name: Install luacheck
       run: luarocks install luacheck
@@ -37,8 +54,9 @@ jobs:
         echo "::add-matcher::.github/luacheck-plain.json"
         luacheck ${{ env.FILES_TO_CHECK }} \
           --formatter plain \
-          --codes --ranges
-        exitcode=${PIPESTATUS[0]}
+          --codes --ranges \
+          --config ${{ env.LUACHECK_CONFIG }}
+        exitcode=$?
         echo "::remove-matcher owner=luacheck-plain_error::"
         echo "::remove-matcher owner=luacheck-plain_warning::"
         if [ "$exitcode" -gt 1 ]; then
