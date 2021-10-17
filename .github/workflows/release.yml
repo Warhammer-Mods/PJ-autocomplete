@@ -135,7 +135,7 @@ jobs:
         fetch-depth: 0
 
     - name: Remove existing rockspec
-      run: rm -f *.rockspec
+      run: git rm -f *.rockspec
 
     - name: Download updated files
       uses: actions/download-artifact@v2
