@@ -144,7 +144,7 @@ jobs:
         git add ${{ needs.lint-and-update.outputs.files }}
         git commit -m "[Luarocks] Update rockspec"
         if ${{ startsWith(github.ref, 'refs/tags/') }}; then
-          git tag -fa "release/${GITHUB_REF##*/}" -m "${tag_message}"
+          git tag -a "release/${GITHUB_REF##*/}" -m "${tag_message}"
         fi
 
     - name: Push changes
