@@ -3,7 +3,7 @@ name: Lua lint
 on: 
   push:
     branches:
-      - master
+      - main
       - develop
       - 'feature/**'
       - 'hotfix/**'
@@ -12,7 +12,7 @@ on:
       - 'update/**'
   pull_request:
     branches:
-      - master
+      - main
       - develop
       - 'feature/**'
       - 'hotfix/**'
@@ -25,7 +25,7 @@ env:
   FILES_TO_CHECK: >-
     .
   LUACHECK_CONFIG: .luacheckrc
-  LUA_VERSION: "5.1"
+  LUA_VERSION: "5.4"
   LUAROCKS_VERSION: "3.7.0"
 
 jobs:
