@@ -1,19 +1,19 @@
 package = "tw-lua-autocomplete"
-version = "main-1"
+version = "0.1.3-1"
 source = {
-   url = "git+https://im-mortal@github.com/Warhammer-Mods/tw-lua-autocomplete.git",
-   tag = "main"
+   url = "git+https://github.com/Warhammer-Mods/tw-lua-autocomplete",
+   tag = "v0.1.3"
 }
 description = {
    summary = "Provides definitions for Total War games Lua API: types, static objects, functions, etc.",
    detailed = [[
 Provides definitions for Total War games Lua API: types, static objects, functions, etc.
 ]],
-   homepage = "*** please enter a project homepage ***",
+   homepage = "https://github.com/Warhammer-Mods/tw-lua-autocomplete",
    license = "MIT"
 }
 dependencies = {
-   "lua ~> 5.1"
+   "lua >= 5.1, < 5.5"
 }
 build = {
    type = "builtin",
